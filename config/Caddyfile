@@ -4,6 +4,7 @@
     storage file_system {
         root /data/caddy
     }
+    auto_https disable_redirects
 }
 
 import /etc/caddy/sites/*.caddy

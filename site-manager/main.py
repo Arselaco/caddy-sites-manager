@@ -145,9 +145,7 @@ def render_entry(entry: Dict[str, Any]) -> str:
     lines.append("    encode gzip zstd")
     lines.append("")
     
-    # Handle everything with reverse proxy (ACME handled automatically by Caddy)
-    lines.append("    # Proxy all requests to upstream")
-
+    # Proxy all requests to upstream (ACME handled automatically)
     timeouts = entry.get("timeouts", {})
     health = entry.get("healthcheck", {})
 
@@ -182,6 +180,12 @@ def render_entry(entry: Dict[str, Any]) -> str:
         block_lines.append(reverse_line)
 
     lines.extend(block_lines)
+    lines.append("}")
+    lines.append("")
+    
+    # Add HTTP site with explicit redirect (except for ACME challenges)
+    lines.append(f"http://{hosts_line} {{")
+    lines.append(f"    redir https://{entry['hosts'][0]}{{uri}} permanent")
     lines.append("}")
     lines.append("")
     
