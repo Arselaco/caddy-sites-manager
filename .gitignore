@@ -7,6 +7,9 @@
 *.pem
 *.crt
 
+# Domains
+domains.yaml
+
 # Python
 __pycache__/
 *.py[cod]
