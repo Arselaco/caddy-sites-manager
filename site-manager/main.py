@@ -145,7 +145,7 @@ def render_entry(entry: Dict[str, Any]) -> str:
     lines.append("    encode gzip zstd")
     lines.append("")
     
-    # Proxy all requests to upstream (ACME handled automatically)
+    # Proxy all requests to upstream
     timeouts = entry.get("timeouts", {})
     health = entry.get("healthcheck", {})
 
@@ -176,6 +176,22 @@ def render_entry(entry: Dict[str, Any]) -> str:
         if entry.get("preserve_host", True):
             block_lines.append("        header_up Host {http.request.header.Host}")
         block_lines.append("    }")
+    else:
+        block_lines.append(reverse_line)
+
+    lines.extend(block_lines)
+    lines.append("}")
+    lines.append("")
+    
+    return "\n".join(lines)
+    else:
+        block_lines.append(reverse_line)
+
+    lines.extend(block_lines)
+    lines.append("}")
+    lines.append("")
+    
+    return "\n".join(lines)
     else:
         block_lines.append(reverse_line)
 
