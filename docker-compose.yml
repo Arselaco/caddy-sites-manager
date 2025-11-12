@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  caddy:
+    image: caddy:2.8.4-alpine
+    container_name: edge-caddy
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${CADDY_ADMIN_PORT:-2019}:2019"
+    volumes:
+      - ./config/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./config/sites:/etc/caddy/sites
+      - ./data/caddy:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:2019/config/ >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  site-manager:
+    build:
+      context: ./site-manager
+    container_name: edge-site-manager
+    depends_on:
+      caddy:
+        condition: service_healthy
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./domains.yaml:/work/domains.yaml:ro
+      - ./config/Caddyfile:/work/base/Caddyfile:ro
+      - ./config/sites:/work/generated
+      - ./data/caddy:/data

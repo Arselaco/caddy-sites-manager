@@ -1,0 +1,12 @@
+{
+    admin 0.0.0.0:{$CADDY_ADMIN_PORT}
+    email {$ACME_EMAIL}
+    storage file_system {
+        root /data/caddy
+    }
+    auto_https {
+        disable_redirects off
+    }
+}
+
+import /etc/caddy/sites/*.caddy

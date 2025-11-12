@@ -1,0 +1,6 @@
+sites:
+  - domain: shop.example.com
+    upstream:
+      host: localhost
+      port: 8081
+      scheme: http
