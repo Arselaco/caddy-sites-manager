@@ -184,20 +184,6 @@ def render_entry(entry: Dict[str, Any]) -> str:
     lines.append("")
     
     return "\n".join(lines)
-    else:
-        block_lines.append(reverse_line)
-
-    lines.extend(block_lines)
-    lines.append("}")
-    lines.append("")
-    
-    return "\n".join(lines)
-    else:
-        block_lines.append(reverse_line)
-
-    lines.extend(block_lines)
-    lines.append("}")
-    lines.append("")
     
     # Add HTTP site with explicit redirect (except for ACME challenges)
     lines.append(f"http://{hosts_line} {{")
