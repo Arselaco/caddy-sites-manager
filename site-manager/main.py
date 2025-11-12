@@ -218,10 +218,15 @@ def write_entries(entries: List[Dict[str, Any]]) -> bool:
 
 
 def reload_caddy() -> None:
-    """Reload Caddy configuration by sending a reload signal to the admin API."""
-    url = f"{CADDY_ADMIN_URL}/config/reload"
+    """Reload Caddy configuration by posting the raw Caddyfile content."""
+    config_text = BASE_FILE.read_text(encoding="utf-8")
+    url = f"{CADDY_ADMIN_URL}/load"
     LOGGER.debug("Reloading Caddy via %s", url)
-    response = requests.post(url, timeout=15)
+    
+    # Send the raw Caddyfile content with proper content-type
+    headers = {"Content-Type": "text/caddyfile"}
+    response = requests.post(url, data=config_text, headers=headers, timeout=15)
+    
     if response.status_code >= 400:
         raise RuntimeError(f"Caddy reload failed: {response.status_code} {response.text}")
     LOGGER.info("Caddy configuration reloaded")
