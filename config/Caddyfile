@@ -4,12 +4,6 @@
     storage file_system {
         root /data/caddy
     }
-    auto_https disable_redirects
-}
-
-# HTTP to HTTPS redirect (except ACME challenges)
-:80 {
-    redir https://{host}{uri} permanent
 }
 
 import /etc/caddy/sites/*.caddy
