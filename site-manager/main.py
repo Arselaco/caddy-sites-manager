@@ -143,11 +143,25 @@ def render_entry(entry: Dict[str, Any]) -> str:
     hosts_line = ", ".join(entry["hosts"])
     lines = [f"{hosts_line} {{"]
     lines.append("    encode gzip zstd")
+    lines.append("")
+    
+    # Handle ACME challenges directly (automatic for all sites)
+    lines.append("    # Handle ACME challenges for Let's Encrypt")
+    lines.append("    handle /.well-known/acme-challenge/* {")
+    lines.append("        file_server {")
+    lines.append("            root /tmp")
+    lines.append("        }")
+    lines.append("    }")
+    lines.append("")
+    
+    # Handle everything else with reverse proxy
+    lines.append("    # Proxy all other requests to upstream")
+    lines.append("    handle {")
 
     timeouts = entry.get("timeouts", {})
     health = entry.get("healthcheck", {})
 
-    reverse_line = f"    reverse_proxy {entry['upstream']}"
+    reverse_line = f"        reverse_proxy {entry['upstream']}"
     block_lines: List[str] = []
 
     requires_block = bool(health or timeouts or entry.get("preserve_host", True))
@@ -159,25 +173,26 @@ def render_entry(entry: Dict[str, Any]) -> str:
             interval = health.get("interval")
             timeout = health.get("timeout")
             if uri:
-                block_lines.append(f"        health_uri {uri}")
+                block_lines.append(f"            health_uri {uri}")
             if interval:
-                block_lines.append(f"        health_interval {interval}")
+                block_lines.append(f"            health_interval {interval}")
             if timeout:
-                block_lines.append(f"        health_timeout {timeout}")
+                block_lines.append(f"            health_timeout {timeout}")
         if timeouts:
             if timeout := timeouts.get("dial"):
-                block_lines.append(f"        dial_timeout {timeout}")
+                block_lines.append(f"            dial_timeout {timeout}")
             if timeout := timeouts.get("read"):
-                block_lines.append(f"        read_timeout {timeout}")
+                block_lines.append(f"            read_timeout {timeout}")
             if timeout := timeouts.get("write"):
-                block_lines.append(f"        write_timeout {timeout}")
+                block_lines.append(f"            write_timeout {timeout}")
         if entry.get("preserve_host", True):
-            block_lines.append("        header_up Host {http.request.header.Host}")
-        block_lines.append("    }")
+            block_lines.append("            header_up Host {http.request.header.Host}")
+        block_lines.append("        }")
     else:
         block_lines.append(reverse_line)
 
     lines.extend(block_lines)
+    lines.append("    }")  # Close handle block
     lines.append("}")
     lines.append("")
     return "\n".join(lines)
