@@ -195,6 +195,23 @@ def render_entry(entry: Dict[str, Any]) -> str:
     lines.append("    }")  # Close handle block
     lines.append("}")
     lines.append("")
+    
+    # Add HTTP-only site for ACME challenges (no redirect)
+    lines.append(f"http://{hosts_line} {{")
+    lines.append("    # Handle ACME challenges on HTTP without redirect")
+    lines.append("    handle /.well-known/acme-challenge/* {")
+    lines.append("        file_server {")
+    lines.append("            root /tmp")
+    lines.append("        }")
+    lines.append("    }")
+    lines.append("")
+    lines.append("    # Redirect all other HTTP requests to HTTPS")
+    lines.append("    handle {")
+    lines.append(f"        redir https://{entry['hosts'][0]}{{uri}} permanent")
+    lines.append("    }")
+    lines.append("}")
+    lines.append("")
+    
     return "\n".join(lines)
 
 
